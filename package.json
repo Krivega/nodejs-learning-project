@@ -1,0 +1,73 @@
+{
+  "name": "nodejs-learning-project",
+  "version": "0.0.0",
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Krivega Dmitriy",
+    "email": "mr.krivega@gmail.com",
+    "url": "https://krivega.com"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json",
+    "dev": "npm run start:watch",
+    "lint": "yarn lint:ts && yarn lint:js",
+    "lint:js": "eslint --report-unused-disable-directives --max-warnings 0 --cache --cache-strategy=content",
+    "lint:ts": "tsc",
+    "prepare": "husky",
+    "prepublishOnly": "yarn build",
+    "release": "release-it",
+    "start": "npm run start:node -- src/app.ts",
+    "start:node": "node --experimental-specifier-resolution=node --loader ./loader.ts",
+    "start:watch": "npm run start:node -- --watch src/app.ts",
+    "test": "jest",
+    "test:ci": "cross-env CI=true jest --passWithNoTests",
+    "test:coverage": "yarn test:ci --coverage --reporters=default --reporters=jest-junit",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@eslint/compat": "^2.0.0",
+    "@krivega/eslint-config": "^1.1.0",
+    "@release-it/conventional-changelog": "^10.0.2",
+    "@types/express": "^5.0.5",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.1",
+    "@typescript-eslint/parser": "^8.48.0",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.39.1",
+    "husky": "^9.1.7",
+    "jest": "^30.2.0",
+    "jest-extended": "^7.0.0",
+    "jest-junit": "^16.0.0",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.3",
+    "release-it": "^19.0.6",
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16",
+    "tsc-files": "^1.1.4",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  }
+}
