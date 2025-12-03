@@ -32,13 +32,14 @@
     "release": "release-it",
     "start": "npm run start:node -- src/app.ts",
     "start:node": "node --experimental-specifier-resolution=node --loader ./loader.ts",
-    "start:watch": "npm run start:node -- --watch src/app.ts",
+    "start:watch": "npm run start:node -- --watch src/app.ts --inspect",
     "test": "jest",
     "test:ci": "cross-env CI=true jest --passWithNoTests",
     "test:coverage": "yarn test:ci --coverage --reporters=default --reporters=jest-junit",
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "celebrate": "^15.0.3",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.0.0"

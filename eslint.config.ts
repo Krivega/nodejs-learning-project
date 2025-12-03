@@ -11,6 +11,9 @@ export default defineConfig([
   includeIgnoreFile(gitignorePath),
   {
     extends: [config],
+    rules: {
+      'no-underscore-dangle': ['error', { allow: ['_id'] }],
+    },
     languageOptions: {
       parserOptions: {
         project: './tsconfig.json',
