@@ -23,9 +23,9 @@ export const createUserSchema = celebrate({
         'any.invalid': 'Некорректный формат email',
       }),
     password: Joi.string().required(),
-    name: Joi.string().min(2).max(30).required(),
-    about: Joi.string().min(2).max(200).required(),
-    avatar: Joi.string().uri().required(),
+    name: Joi.string().min(2).max(30).optional(),
+    about: Joi.string().min(2).max(200).optional(),
+    avatar: Joi.string().uri().optional(),
   }),
 });
 
@@ -57,7 +57,13 @@ export const createUser = async (
   req: Request<
     unknown,
     unknown,
-    { email: string; password: string; name: string; about: string; avatar: string }
+    {
+      email: string;
+      password: string;
+      name?: string;
+      about?: string;
+      avatar?: string;
+    }
   >,
   res: Response,
   next: NextFunction,
