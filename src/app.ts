@@ -1,18 +1,22 @@
+import cookieParser from 'cookie-parser';
 import express from 'express';
 
 import { PORT } from '@/config.js';
 import connectDb from '@/db.js';
 import log from '@/log.js';
-import addUserToRequest from '@/middlewares/addUserToRequest.js';
+import auth from '@/middlewares/auth.js';
 import errorHandlers from '@/middlewares/errorHandlers.js';
-import router from '@/routes/index.js';
+import authRouter from '@/routes/auth.js';
+import authorizedRouter from '@/routes/authorizedRouter.js';
 
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json());
 
-app.use(addUserToRequest);
-app.use(router);
+app.use(authRouter);
+
+app.use(auth, authorizedRouter);
 
 app.use(errorHandlers);
 

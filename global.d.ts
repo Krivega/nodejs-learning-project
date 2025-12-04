@@ -8,3 +8,13 @@ declare module 'ts-node/esm' {
   export const load: HooksApi1['load']; // или NodeLoaderHooksAPI2['load'], если нужен API2
   export const transformSource: HooksApi1['transformSource'];
 }
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  type JwtPayload = import('jsonwebtoken').JwtPayload;
+  namespace Express {
+    interface Request {
+      user?: JwtPayload & { userId: string };
+    }
+  }
+}

@@ -1,10 +1,9 @@
 import { celebrate, Joi } from 'celebrate';
-import jwt from 'jsonwebtoken';
 import validator from 'validator';
 
-import { JWT_SECRET } from '@/config.js';
 import NotFoundError from '@/errors/NotFoundError.js';
 import UnauthorizedError from '@/errors/UnauthorizedError.js';
+import { login as loginAuth } from './auth.js';
 import getMeUserId from './getMeUserId.js';
 import userModel from '../models/user.js';
 
@@ -47,13 +46,6 @@ const getUserId = async (req: Request): Promise<string> => {
 
     return userId;
   });
-};
-
-const SEVEN_DAYS_IN_MS = 7 * 24 * 60 * 60 * 1000;
-const TOKEN_EXPIRATION_TIME = SEVEN_DAYS_IN_MS;
-
-const generateToken = (userId: string) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: `${TOKEN_EXPIRATION_TIME}ms` });
 };
 
 const parseUserToResponse = (user: IUserPublic) => {
@@ -111,9 +103,7 @@ export const login = async (
       throw unauthorizedError;
     })
     .then((user) => {
-      const token = generateToken(user._id);
-
-      res.cookie('jwt', token, { httpOnly: true, sameSite: true, maxAge: TOKEN_EXPIRATION_TIME });
+      loginAuth(user._id, res);
 
       return res.send({ data: parseUserToResponse(user) });
     })
