@@ -1,13 +1,31 @@
 import mongoose from 'mongoose';
+import validator from 'validator';
 
 export interface IUser {
   _id: string;
+  email: string;
+  password: string;
   name: string;
   about: string;
   avatar: string;
 }
 
 const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: {
+      validator: (value: string) => {
+        return validator.isEmail(value);
+      },
+      message: 'Некорректный формат email',
+    },
+  },
+  password: {
+    type: String,
+    required: true,
+  },
   name: {
     type: String,
     required: true,

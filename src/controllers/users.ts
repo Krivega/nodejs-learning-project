@@ -1,4 +1,5 @@
 import { celebrate, Joi } from 'celebrate';
+import validator from 'validator';
 
 import NotFoundError from '@/errors/NotFoundError.js';
 import getMeUserId from './getMeUserId.js';
@@ -9,6 +10,19 @@ import type { IUser } from '../models/user.js';
 
 export const createUserSchema = celebrate({
   body: Joi.object().keys({
+    email: Joi.string()
+      .required()
+      .custom((value: string, helpers) => {
+        if (!validator.isEmail(value)) {
+          return helpers.error('any.invalid');
+        }
+
+        return value;
+      })
+      .messages({
+        'any.invalid': 'Некорректный формат email',
+      }),
+    password: Joi.string().required(),
     name: Joi.string().min(2).max(30).required(),
     about: Joi.string().min(2).max(200).required(),
     avatar: Joi.string().uri().required(),
@@ -40,14 +54,18 @@ const parseUserToResponse = (user: IUser) => {
   };
 };
 export const createUser = async (
-  req: Request<unknown, unknown, { name: string; about: string; avatar: string }>,
+  req: Request<
+    unknown,
+    unknown,
+    { email: string; password: string; name: string; about: string; avatar: string }
+  >,
   res: Response,
   next: NextFunction,
 ) => {
-  const { name, about, avatar } = req.body;
+  const { email, password, name, about, avatar } = req.body;
 
   return userModel
-    .create({ name, about, avatar })
+    .create({ email, password, name, about, avatar })
     .then((user) => {
       return res.send({ data: parseUserToResponse(user) });
     })
