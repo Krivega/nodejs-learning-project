@@ -13,6 +13,10 @@ export interface ICard {
   likes: IUser[];
 }
 
+interface ICardModel extends mongoose.Model<ICard> {
+  checkCardExists: (cardId: string) => Promise<boolean>;
+}
+
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -44,18 +48,20 @@ const cardSchema = new mongoose.Schema({
   },
 });
 
-const cardModel = mongoose.model<ICard>('card', cardSchema);
-
-export const checkCardExists = async (cardId: string) => {
+cardSchema.statics.checkCardExists = async function checkCardExists(
+  cardId: string,
+): Promise<boolean> {
   let isCardExists = false;
 
   try {
-    isCardExists = (await cardModel.exists({ _id: cardId })) !== null;
+    isCardExists = (await this.exists({ _id: cardId })) !== null;
   } catch {
     isCardExists = false;
   }
 
   return isCardExists;
 };
+
+const cardModel = mongoose.model<ICard, ICardModel>('card', cardSchema);
 
 export default cardModel;

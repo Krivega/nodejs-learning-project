@@ -3,9 +3,9 @@ import validator from 'validator';
 
 import NotFoundError from '@/errors/NotFoundError.js';
 import getMeUserId from './getMeUserId.js';
-import userModel, { checkUserExists } from '../models/user.js';
+import userModel from '../models/user.js';
 
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import type { IUser } from '../models/user.js';
 
 export const createUserSchema = celebrate({
@@ -35,7 +35,7 @@ const getUserId = async (req: Request): Promise<string> => {
   const { userId } = req.params;
 
   return Promise.resolve().then(async () => {
-    const isUserExists = await checkUserExists(userId);
+    const isUserExists = await userModel.checkUserExists(userId);
 
     if (!isUserExists) {
       throw userNotExistsError;

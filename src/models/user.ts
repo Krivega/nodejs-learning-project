@@ -10,6 +10,10 @@ export interface IUser {
   avatar: string;
 }
 
+interface IUserModel extends mongoose.Model<IUser> {
+  checkUserExists: (userId: string) => Promise<boolean>;
+}
+
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -44,20 +48,22 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-export const userModelName = 'user';
-
-const userModel = mongoose.model<IUser>(userModelName, userSchema);
-
-export const checkUserExists = async (userId: string) => {
+userSchema.statics.checkUserExists = async function checkUserExists(
+  userId: string,
+): Promise<boolean> {
   let isUserExists = false;
 
   try {
-    isUserExists = (await userModel.exists({ _id: userId })) !== null;
+    isUserExists = (await this.exists({ _id: userId })) !== null;
   } catch {
     isUserExists = false;
   }
 
   return isUserExists;
 };
+
+export const userModelName = 'user';
+
+const userModel = mongoose.model<IUser, IUserModel>(userModelName, userSchema);
 
 export default userModel;

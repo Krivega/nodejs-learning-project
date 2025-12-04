@@ -2,7 +2,7 @@ import { celebrate, Joi } from 'celebrate';
 
 import NotFoundError from '@/errors/NotFoundError.js';
 import getMeUserId from './getMeUserId.js';
-import cardModel, { checkCardExists } from '../models/card.js';
+import cardModel from '../models/card.js';
 
 import type { Request, Response, NextFunction } from 'express';
 import type { ICard } from '../models/card.js';
@@ -21,7 +21,7 @@ const getCardId = async (req: Request): Promise<string> => {
   const { cardId } = req.params;
 
   return Promise.resolve().then(async () => {
-    const isCardExists = await checkCardExists(cardId);
+    const isCardExists = await cardModel.checkCardExists(cardId);
 
     if (!isCardExists) {
       throw cardNotExistsError;
