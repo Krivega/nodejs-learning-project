@@ -4,7 +4,7 @@ import NotFoundError from '@/errors/NotFoundError.js';
 import getMeUserId from './getMeUserId.js';
 import cardModel from '../models/card.js';
 
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import type { ICard } from '../models/card.js';
 import type { IUser } from '../models/user.js';
 
@@ -99,9 +99,9 @@ export const deleteCardByIdSchema = celebrate({
 });
 
 export const deleteCardById = async (req: Request, res: Response, next: NextFunction) => {
-  return getCardId(req)
-    .then((cardId) => {
-      return cardModel.findByIdAndDelete(cardId);
+  return getMeUserId(req)
+    .then((userId) => {
+      return cardModel.findByIdAndDelete(req.params.cardId, { owner: userId });
     })
     .then(resolveSendCardToResponse(res, next))
     .catch(next);
