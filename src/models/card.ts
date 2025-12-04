@@ -17,7 +17,7 @@ interface ICardModel extends mongoose.Model<ICard> {
   checkCardExists: (cardId: string) => Promise<boolean>;
 }
 
-const cardSchema = new mongoose.Schema({
+const cardSchema = new mongoose.Schema<ICard>({
   name: {
     type: String,
     required: true,

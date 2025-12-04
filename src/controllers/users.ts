@@ -6,7 +6,7 @@ import getMeUserId from './getMeUserId.js';
 import userModel from '../models/user.js';
 
 import type { NextFunction, Request, Response } from 'express';
-import type { IUser } from '../models/user.js';
+import type { IUser, IUserPublic } from '../models/user.js';
 
 export const createUserSchema = celebrate({
   body: Joi.object().keys({
@@ -45,9 +45,10 @@ const getUserId = async (req: Request): Promise<string> => {
   });
 };
 
-const parseUserToResponse = (user: IUser) => {
+const parseUserToResponse = (user: IUserPublic) => {
   return {
     id: user._id,
+    email: user.email,
     name: user.name,
     about: user.about,
     avatar: user.avatar,
@@ -71,7 +72,7 @@ export const createUser = async (
   const { email, password, name, about, avatar } = req.body;
 
   return userModel
-    .create({ email, password, name, about, avatar })
+    .createUser({ email, password, name, about, avatar })
     .then((user) => {
       return res.send({ data: parseUserToResponse(user) });
     })

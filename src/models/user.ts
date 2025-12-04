@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import validator from 'validator';
 
@@ -10,11 +11,28 @@ export interface IUser {
   avatar: string;
 }
 
-interface IUserModel extends mongoose.Model<IUser> {
-  checkUserExists: (userId: string) => Promise<boolean>;
+export interface IUserCreate {
+  email: string;
+  password: string;
+  name?: string;
+  about?: string;
+  avatar?: string;
 }
 
-const userSchema = new mongoose.Schema({
+export interface IUserPublic {
+  _id: string;
+  email: string;
+  name: string;
+  about: string;
+  avatar: string;
+}
+
+interface IUserModel extends mongoose.Model<IUser> {
+  checkUserExists: (userId: string) => Promise<boolean>;
+  createUser: (user: IUserCreate) => Promise<IUserPublic>;
+}
+
+const userSchema = new mongoose.Schema<IUser>({
   email: {
     type: String,
     required: true,
@@ -63,6 +81,22 @@ userSchema.statics.checkUserExists = async function checkUserExists(
   }
 
   return isUserExists;
+};
+
+userSchema.statics.createUser = async function createUser(
+  params: IUserCreate,
+): Promise<IUserPublic> {
+  const hashedPassword = await bcrypt.hash(params.password, 10);
+
+  const userCreated = await this.create({ ...params, password: hashedPassword });
+
+  return {
+    _id: String(userCreated._id),
+    email: userCreated.email,
+    name: userCreated.name,
+    about: userCreated.about,
+    avatar: userCreated.avatar,
+  };
 };
 
 export const userModelName = 'user';

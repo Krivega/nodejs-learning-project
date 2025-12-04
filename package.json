@@ -39,6 +39,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "celebrate": "^15.0.3",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
