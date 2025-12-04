@@ -24,18 +24,18 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json",
     "dev": "npm run start:watch",
-    "lint": "yarn lint:ts && yarn lint:js",
+    "lint": "npm run lint:ts && npm run lint:js",
     "lint:js": "eslint --report-unused-disable-directives --max-warnings 0 --cache --cache-strategy=content",
     "lint:ts": "tsc",
     "prepare": "husky",
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "npm run build",
     "release": "release-it",
     "start": "npm run start:node -- src/app.ts",
     "start:node": "node --experimental-specifier-resolution=node --loader ./loader.ts",
     "start:watch": "npm run start:node -- --watch src/app.ts --inspect",
     "test": "jest",
     "test:ci": "cross-env CI=true jest --passWithNoTests",
-    "test:coverage": "yarn test:ci --coverage --reporters=default --reporters=jest-junit",
+    "test:coverage": "npm run test:ci --coverage --reporters=default --reporters=jest-junit",
     "test:watch": "jest --watch"
   },
   "dependencies": {
