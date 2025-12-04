@@ -184,3 +184,12 @@ export const updateUserAvatarById = async (
     .then(resolveSendUserToResponse(res, next))
     .catch(next);
 };
+
+export const getMe = async (req: Request, res: Response, next: NextFunction) => {
+  return getMeUserId(req)
+    .then((userId) => {
+      return userModel.findById(userId);
+    })
+    .then(resolveSendUserToResponse(res, next))
+    .catch(next);
+};
