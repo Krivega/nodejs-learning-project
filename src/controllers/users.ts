@@ -1,7 +1,10 @@
 import { celebrate, Joi } from 'celebrate';
+import jwt from 'jsonwebtoken';
 import validator from 'validator';
 
+import { JWT_SECRET } from '@/config.js';
 import NotFoundError from '@/errors/NotFoundError.js';
+import UnauthorizedError from '@/errors/UnauthorizedError.js';
 import getMeUserId from './getMeUserId.js';
 import userModel from '../models/user.js';
 
@@ -30,6 +33,7 @@ export const createUserSchema = celebrate({
 });
 
 const userNotExistsError = new NotFoundError('Пользователь не найден');
+const unauthorizedError = new UnauthorizedError('Неверный email или пароль');
 
 const getUserId = async (req: Request): Promise<string> => {
   const { userId } = req.params;
@@ -45,6 +49,13 @@ const getUserId = async (req: Request): Promise<string> => {
   });
 };
 
+const SEVEN_DAYS_IN_MS = 7 * 24 * 60 * 60 * 1000;
+const TOKEN_EXPIRATION_TIME = SEVEN_DAYS_IN_MS;
+
+const generateToken = (userId: string) => {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: `${TOKEN_EXPIRATION_TIME}ms` });
+};
+
 const parseUserToResponse = (user: IUserPublic) => {
   return {
     id: user._id,
@@ -54,6 +65,7 @@ const parseUserToResponse = (user: IUserPublic) => {
     avatar: user.avatar,
   };
 };
+
 export const createUser = async (
   req: Request<
     unknown,
@@ -74,6 +86,35 @@ export const createUser = async (
   return userModel
     .createUser({ email, password, name, about, avatar })
     .then((user) => {
+      return res.send({ data: parseUserToResponse(user) });
+    })
+    .catch(next);
+};
+
+export const loginSchema = celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required(),
+    password: Joi.string().required(),
+  }),
+});
+
+export const login = async (
+  req: Request<unknown, unknown, { email: string; password: string }>,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { email, password } = req.body;
+
+  return userModel
+    .findUserByCredentials({ email, password })
+    .catch(() => {
+      throw unauthorizedError;
+    })
+    .then((user) => {
+      const token = generateToken(user._id);
+
+      res.cookie('jwt', token, { httpOnly: true, sameSite: true, maxAge: TOKEN_EXPIRATION_TIME });
+
       return res.send({ data: parseUserToResponse(user) });
     })
     .catch(next);

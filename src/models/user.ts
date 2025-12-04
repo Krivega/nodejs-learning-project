@@ -30,9 +30,10 @@ export interface IUserPublic {
 interface IUserModel extends mongoose.Model<IUser> {
   checkUserExists: (userId: string) => Promise<boolean>;
   createUser: (user: IUserCreate) => Promise<IUserPublic>;
+  findUserByCredentials: (params: { email: string; password: string }) => Promise<IUserPublic>;
 }
 
-const userSchema = new mongoose.Schema<IUser>({
+const userSchema = new mongoose.Schema<IUser, IUserModel>({
   email: {
     type: String,
     required: true,
@@ -69,6 +70,16 @@ const userSchema = new mongoose.Schema<IUser>({
   },
 });
 
+const parseUserToResponse = (user: IUser): IUserPublic => {
+  return {
+    _id: String(user._id),
+    email: user.email,
+    name: user.name,
+    about: user.about,
+    avatar: user.avatar,
+  };
+};
+
 userSchema.statics.checkUserExists = async function checkUserExists(
   userId: string,
 ): Promise<boolean> {
@@ -90,13 +101,29 @@ userSchema.statics.createUser = async function createUser(
 
   const userCreated = await this.create({ ...params, password: hashedPassword });
 
-  return {
-    _id: String(userCreated._id),
-    email: userCreated.email,
-    name: userCreated.name,
-    about: userCreated.about,
-    avatar: userCreated.avatar,
-  };
+  return parseUserToResponse(userCreated);
+};
+
+userSchema.statics.findUserByCredentials = async function findUserByCredentials({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}): Promise<IUserPublic> {
+  const user: IUser | null = await this.findOne({ email });
+
+  if (!user) {
+    throw new Error('Пользователь не найден');
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordValid) {
+    throw new Error('Неверный email или пароль');
+  }
+
+  return parseUserToResponse(user);
 };
 
 export const userModelName = 'user';
