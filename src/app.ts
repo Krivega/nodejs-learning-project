@@ -1,41 +1,24 @@
-import { errors } from 'celebrate';
 import express from 'express';
 
 import { PORT } from '@/config.js';
-import { connect } from '@/db.js';
+import connectDb from '@/db.js';
 import log from '@/log.js';
-import cardsRouter from '@/routes/cards.js';
-import usersRouter from '@/routes/users.js';
-
-import type { Request, Response, NextFunction } from 'express';
-import type { TErrorWithStatusCode } from '@/errors/types.js';
+import addUserToRequest from '@/middlewares/addUserToRequest.js';
+import errorHandlers from '@/middlewares/errorHandlers.js';
+import router from '@/routes/index.js';
 
 const app = express();
 
-await connect();
-
 app.use(express.json());
 
-app.use((req: Request, _res: Response, next: NextFunction) => {
-  // @ts-expect-error
-  req.user = {
-    _id: '693019c29518a1d8f4e3e8aa',
-  };
+app.use(addUserToRequest);
+app.use(router);
 
-  next();
-});
+app.use(errorHandlers);
 
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
-
-app.use(errors());
-// eslint-disable-next-line @typescript-eslint/max-params
-app.use((error: TErrorWithStatusCode, _req: Request, res: Response, _next: NextFunction) => {
-  const { statusCode = 500, message } = error;
-
-  res.status(statusCode).send({
-    message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
-  });
+await connectDb().catch((error: unknown) => {
+  log('Error connecting to database:', error);
+  throw new Error('Failed to connect to database');
 });
 
 app.listen(PORT, () => {
