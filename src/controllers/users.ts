@@ -1,16 +1,14 @@
 import { celebrate, Joi } from 'celebrate';
 import validator from 'validator';
 
-import ConflictError from '@/errors/ConflictError.js';
-import NotFoundError from '@/errors/NotFoundError.js';
-import UnauthorizedError from '@/errors/UnauthorizedError.js';
+import { userNotExistsError, unauthorizedError, conflictError } from '@/errors/index.js';
 import { isMongoDuplicateKeyError } from '@/models/errors.js';
+import userModel from '@/models/user.js';
 import { login as loginAuth } from './auth.js';
-import getMeUserId from './getMeUserId.js';
-import userModel from '../models/user.js';
+import { getMeUserId } from './userId.js';
 
 import type { NextFunction, Request, Response } from 'express';
-import type { IUser, IUserPublic } from '../models/user.js';
+import type { IUser, IUserPublic } from '@/models/user.js';
 
 export const createUserSchema = celebrate({
   body: Joi.object().keys({
@@ -32,10 +30,6 @@ export const createUserSchema = celebrate({
     avatar: Joi.string().uri().optional(),
   }),
 });
-
-const userNotExistsError = new NotFoundError('Пользователь не найден');
-const unauthorizedError = new UnauthorizedError('Неверный email или пароль');
-const conflictError = new ConflictError('Такой email уже занят');
 
 const getUserId = async (req: Request): Promise<string> => {
   const { userId } = req.params;

@@ -1,12 +1,12 @@
 import { celebrate, Joi } from 'celebrate';
 
-import NotFoundError from '@/errors/NotFoundError.js';
-import getMeUserId from './getMeUserId.js';
-import cardModel from '../models/card.js';
+import { cardNotExistsError } from '@/errors/index.js';
+import cardModel from '@/models/card.js';
+import { getMeUserId } from './userId.js';
 
 import type { NextFunction, Request, Response } from 'express';
-import type { ICard } from '../models/card.js';
-import type { IUser } from '../models/user.js';
+import type { ICard } from '@/models/card.js';
+import type { IUser } from '@/models/user.js';
 
 export const createCardSchema = celebrate({
   body: Joi.object().keys({
@@ -14,8 +14,6 @@ export const createCardSchema = celebrate({
     link: Joi.string().uri().required(),
   }),
 });
-
-const cardNotExistsError = new NotFoundError('Карточка не найдена');
 
 const getCardId = async (req: Request): Promise<string> => {
   const { cardId } = req.params;

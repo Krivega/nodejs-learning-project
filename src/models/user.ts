@@ -2,6 +2,8 @@ import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import validator from 'validator';
 
+import { unauthorizedError, userNotExistsError } from '@/errors/index.js';
+
 export interface IUser {
   _id: string;
   email: string;
@@ -121,13 +123,13 @@ userSchema.statics.findUserByCredentials = async function findUserByCredentials(
   const user: IUser | null = await this.findOne({ email }).select('+password');
 
   if (!user) {
-    throw new Error('Пользователь не найден');
+    throw userNotExistsError;
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
-    throw new Error('Неверный email или пароль');
+    throw unauthorizedError;
   }
 
   return parseUserToResponse(user);

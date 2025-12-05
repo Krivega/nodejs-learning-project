@@ -14,9 +14,9 @@ import {
 const router = express.Router();
 
 router.get('/', getUsers);
-router.get('/:userId', getUserByIdSchema, getUserById);
+router.get('/me', getMe);
 router.put('/me', updateUserByIdSchema, updateUserById);
 router.patch('/me/avatar', updateUserAvatarByIdSchema, updateUserAvatarById);
-router.get('/me', getMe);
+router.get('/:userId', getUserByIdSchema, getUserById);
 
 export default router;
