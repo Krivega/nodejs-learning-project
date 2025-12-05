@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import validator from 'validator';
 
 import { userModelName } from './user.js';
 
@@ -27,6 +28,12 @@ const cardSchema = new mongoose.Schema<ICard, ICardModel>({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator: (value: string) => {
+        return validator.isURL(value);
+      },
+      message: 'Некорректный формат URL',
+    },
   },
   createdAt: {
     type: Date,
