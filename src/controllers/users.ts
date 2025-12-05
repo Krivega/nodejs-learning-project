@@ -1,8 +1,10 @@
 import { celebrate, Joi } from 'celebrate';
 import validator from 'validator';
 
+import ConflictError from '@/errors/ConflictError.js';
 import NotFoundError from '@/errors/NotFoundError.js';
 import UnauthorizedError from '@/errors/UnauthorizedError.js';
+import { isMongoDuplicateKeyError } from '@/models/errors.js';
 import { login as loginAuth } from './auth.js';
 import getMeUserId from './getMeUserId.js';
 import userModel from '../models/user.js';
@@ -33,6 +35,7 @@ export const createUserSchema = celebrate({
 
 const userNotExistsError = new NotFoundError('Пользователь не найден');
 const unauthorizedError = new UnauthorizedError('Неверный email или пароль');
+const conflictError = new ConflictError('Такой email уже занят');
 
 const getUserId = async (req: Request): Promise<string> => {
   const { userId } = req.params;
@@ -80,7 +83,13 @@ export const createUser = async (
     .then((user) => {
       return res.send({ data: parseUserToResponse(user) });
     })
-    .catch(next);
+    .catch((error: unknown) => {
+      if (isMongoDuplicateKeyError(error)) {
+        next(conflictError);
+      } else {
+        next(error);
+      }
+    });
 };
 
 export const loginSchema = celebrate({
