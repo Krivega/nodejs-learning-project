@@ -39,17 +39,20 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@types/express-winston": "^3.0.4",
     "bcryptjs": "^3.0.3",
     "celebrate": "^15.0.3",
     "cookie-parser": "^1.4.7",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.0",
-    "validator": "^13.15.23"
+    "validator": "^13.15.23",
+    "winston": "^3.18.3",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.1.0",
-    "@commitlint/config-conventional": "^20.0.0",
+    "@commitlint/cli": "^20.2.0",
+    "@commitlint/config-conventional": "^20.2.0",
     "@eslint/compat": "^2.0.0",
     "@krivega/eslint-config": "^1.1.0",
     "@release-it/conventional-changelog": "^10.0.2",
