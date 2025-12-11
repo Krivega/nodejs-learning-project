@@ -1,3 +1,13 @@
+import path from 'node:path';
+
+const isDev = process.env.NODE_ENV !== 'production';
+
+if (isDev) {
+  process.loadEnvFile(path.resolve(process.cwd(), '.env.development'));
+} else {
+  process.loadEnvFile(path.resolve(process.cwd(), '.env.production'));
+}
+
 process.loadEnvFile();
 
 const getEnvDefined = (env: string): string => {
@@ -24,7 +34,5 @@ if (Number.isNaN(MONGO_DB_PORT) || MONGO_DB_PORT <= 0) {
 
 const MONGO_DB_NAME = getEnvDefined('MONGO_DB_NAME');
 const JWT_SECRET = getEnvDefined('JWT_SECRET');
-
-const isDev = process.env.NODE_ENV !== 'production';
 
 export { PORT, MONGO_DB_PORT, MONGO_DB_NAME, JWT_SECRET, isDev };

@@ -1,11 +1,11 @@
 import { celebrate, Joi } from 'celebrate';
 import validator from 'validator';
 
-import { userNotExistsError, unauthorizedError, conflictError } from '@/errors/index.js';
+import { userNotExistsError, conflictError } from '@/errors/index.js';
 import { isMongoDuplicateKeyError } from '@/models/errors.js';
 import userModel from '@/models/user.js';
 import { login as loginAuth } from './auth.js';
-import { getMeUserId } from './userId.js';
+import { getAuthenticatedUserId } from './userId.js';
 
 import type { NextFunction, Request, Response } from 'express';
 import type { IUser, IUserPublic } from '@/models/user.js';
@@ -33,16 +33,13 @@ export const createUserSchema = celebrate({
 
 const getUserId = async (req: Request): Promise<string> => {
   const { userId } = req.params;
+  const isUserExists = await userModel.checkUserExists(userId);
 
-  return Promise.resolve().then(async () => {
-    const isUserExists = await userModel.checkUserExists(userId);
+  if (!isUserExists) {
+    throw userNotExistsError;
+  }
 
-    if (!isUserExists) {
-      throw userNotExistsError;
-    }
-
-    return userId;
-  });
+  return userId;
 };
 
 const parseUserToResponse = (user: IUserPublic) => {
@@ -73,7 +70,13 @@ export const createUser = async (
   const { email, password, name, about, avatar } = req.body;
 
   return userModel
-    .createUser({ email, password, name, about, avatar })
+    .createUser({
+      email,
+      password,
+      name,
+      about,
+      avatar,
+    })
     .then((user) => {
       return res.send({ data: parseUserToResponse(user) });
     })
@@ -102,9 +105,6 @@ export const login = async (
 
   return userModel
     .findUserByCredentials({ email, password })
-    .catch(() => {
-      throw unauthorizedError;
-    })
     .then((user) => {
       loginAuth(user._id, res);
 
@@ -161,7 +161,7 @@ export const updateUserById = async (
   res: Response,
   next: NextFunction,
 ) => {
-  return getMeUserId(req)
+  return getAuthenticatedUserId(req)
     .then(async (userId) => {
       return userModel.findByIdAndUpdate(userId, req.body);
     })
@@ -180,7 +180,7 @@ export const updateUserAvatarById = async (
   res: Response,
   next: NextFunction,
 ) => {
-  return getMeUserId(req)
+  return getAuthenticatedUserId(req)
     .then(async (userId) => {
       return userModel.findByIdAndUpdate(userId, req.body);
     })
@@ -189,7 +189,7 @@ export const updateUserAvatarById = async (
 };
 
 export const getMe = async (req: Request, res: Response, next: NextFunction) => {
-  return getMeUserId(req)
+  return getAuthenticatedUserId(req)
     .then((userId) => {
       return userModel.findById(userId);
     })

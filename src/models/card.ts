@@ -14,8 +14,15 @@ export interface ICard {
   likes: IUser[];
 }
 
+interface ICardCreate {
+  name: string;
+  link: string;
+  ownerId: string;
+}
+
 interface ICardModel extends mongoose.Model<ICard> {
   checkCardExists: (cardId: string) => Promise<boolean>;
+  createCard: (card: ICardCreate) => Promise<ICard>;
 }
 
 const cardSchema = new mongoose.Schema<ICard, ICardModel>({
@@ -67,6 +74,10 @@ cardSchema.statics.checkCardExists = async function checkCardExists(
   }
 
   return isCardExists;
+};
+
+cardSchema.statics.createCard = async function create(card: ICardCreate): Promise<ICard> {
+  return this.create(card);
 };
 
 const cardModel = mongoose.model<ICard, ICardModel>('card', cardSchema);

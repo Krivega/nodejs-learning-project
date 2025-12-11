@@ -1,10 +1,10 @@
-import { userNotExistsError } from '@/errors/index.js';
+import { unauthorizedError } from '@/errors/index.js';
 import userModel from '@/models/user.js';
 
 import type { Request } from 'express';
 import type { JwtPayload } from 'jsonwebtoken';
 
-export const setUserIdToReq = (
+export const setAuthenticatedUserIdToReq = (
   req: Request<unknown, unknown, unknown, unknown>,
   payload: JwtPayload,
 ): void => {
@@ -15,7 +15,7 @@ const getUserIdFromReq = (req: Request<unknown, unknown, unknown, unknown>): str
   return req.user?.userId;
 };
 
-export const getMeUserId = async (
+export const getAuthenticatedUserId = async (
   req: Request<unknown, unknown, unknown, unknown>,
 ): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -25,7 +25,7 @@ export const getMeUserId = async (
     const isUserExists = await userModel.checkUserExists(userId);
 
     if (!isUserExists) {
-      throw userNotExistsError;
+      throw unauthorizedError;
     }
 
     return userId;

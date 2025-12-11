@@ -1,12 +1,11 @@
 import { celebrate, Joi } from 'celebrate';
 
-import { cardNotExistsError } from '@/errors/index.js';
+import { cardNotExistsError, forbiddenError } from '@/errors/index.js';
 import cardModel from '@/models/card.js';
-import { getMeUserId } from './userId.js';
+import { getAuthenticatedUserId } from './userId.js';
 
 import type { NextFunction, Request, Response } from 'express';
 import type { ICard } from '@/models/card.js';
-import type { IUser } from '@/models/user.js';
 
 export const createCardSchema = celebrate({
   body: Joi.object().keys({
@@ -58,9 +57,9 @@ export const createCard = async (
 ) => {
   const { name, link } = req.body;
 
-  return getMeUserId(req)
+  return getAuthenticatedUserId(req)
     .then(async (userId) => {
-      return cardModel.create({ name, link, owner: userId as unknown as IUser });
+      return cardModel.createCard({ name, link, ownerId: userId });
     })
     .then(resolveSendCardToResponse(res, next))
     .catch(next);
@@ -97,9 +96,16 @@ export const deleteCardByIdSchema = celebrate({
 });
 
 export const deleteCardById = async (req: Request, res: Response, next: NextFunction) => {
-  return getMeUserId(req)
-    .then((userId) => {
-      return cardModel.findByIdAndDelete(req.params.cardId, { owner: userId });
+  return Promise.all([getAuthenticatedUserId(req), getCardId(req)])
+    .then(([userId, cardId]) => {
+      return cardModel.findByIdAndDelete(cardId, { owner: userId });
+    })
+    .then((card) => {
+      if (!card) {
+        throw forbiddenError;
+      }
+
+      return card;
     })
     .then(resolveSendCardToResponse(res, next))
     .catch(next);
@@ -112,7 +118,7 @@ export const likeCardByIdSchema = celebrate({
 });
 
 export const likeCardById = async (req: Request, res: Response, next: NextFunction) => {
-  return Promise.all([getMeUserId(req), getCardId(req)])
+  return Promise.all([getAuthenticatedUserId(req), getCardId(req)])
     .then(([userId, cardId]) => {
       return cardModel.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true });
     })
@@ -127,7 +133,7 @@ export const dislikeCardByIdSchema = celebrate({
 });
 
 export const dislikeCardById = async (req: Request, res: Response, next: NextFunction) => {
-  return Promise.all([getMeUserId(req), getCardId(req)])
+  return Promise.all([getAuthenticatedUserId(req), getCardId(req)])
     .then(([userId, cardId]) => {
       return cardModel.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true });
     })
