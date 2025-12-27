@@ -1,6 +1,6 @@
 import { verify } from '@/controllers/auth.js';
 import { setAuthenticatedUserIdToReq } from '@/controllers/userId.js';
-import UnauthorizedError from '@/errors/UnauthorizedError.js';
+import { unauthorizedError } from '@/errors/index.js';
 
 import type { NextFunction, Request, Response } from 'express';
 
@@ -13,7 +13,7 @@ const auth = (req: Request, _res: Response, next: NextFunction): void => {
     !('userId' in payload) ||
     typeof payload.userId !== 'string'
   ) {
-    throw new UnauthorizedError('Необходима авторизация');
+    throw unauthorizedError;
   }
 
   setAuthenticatedUserIdToReq(req, payload);
